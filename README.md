@@ -2,3 +2,5 @@
 支持的配置：
 - ElasticSearch单机版（默认限制内存在512M）
 - [Kong网关](https://github.com/Kong/kong)
+- Mongo单机版
+- RabbitMq单机版
