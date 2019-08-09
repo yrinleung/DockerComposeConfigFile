@@ -1,0 +1,86 @@
+version: '2.2'
+networks:
+  esnet:
+    external: true
+services:
+  es00:
+    image: elasticsearch:6.5.1
+    container_name: es00
+    environment:
+      - cluster.name=esdocker-cluster
+      - node.name=node-00
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - .\es00:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - esnet
+  es01:
+    image: elasticsearch:6.5.1
+    container_name: es01
+    environment:
+      - cluster.name=esdocker-cluster
+      - node.name=node-01
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es00"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - .\es01:/usr/share/elasticsearch/data
+    ports:
+      - 9201:9200
+      - 9301:9300
+    networks:
+      - esnet
+    depends_on:
+      - es00
+  es02:
+    image: elasticsearch:6.5.1
+    container_name: es02
+    environment:
+      - cluster.name=esdocker-cluster
+      - node.name=node-02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es00"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - .\es02:/usr/share/elasticsearch/data
+    ports:
+      - 9202:9200
+      - 9302:9300
+    networks:
+      - esnet
+    depends_on:
+      - es00
+
+  kibana:
+    image: kibana:6.5.1
+    container_name: kibana
+    environment:
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_URL=http://es00:9200
+      - XPACK_MONITORING_ENABLED=true
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+    depends_on:
+      - es00
+    external_links:
+      - es00
